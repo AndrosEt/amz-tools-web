@@ -1,0 +1,22 @@
+@forward "sass:color";
+
+:export {
+  primaryColor: #409EFF;
+  successColor: #67C23A;
+  warningColor: #E6A23C;
+  dangerColor: #F56C6C;
+  infoColor: #909399;
+
+  breakpointSm: 576px;
+  breakpointMd: 768px;
+  breakpointLg: 992px;
+  breakpointXl: 1200px;
+
+  spacingBase: 1rem;
+  spacingLg: 2rem;
+  spacingSm: 0.5rem;
+
+  fontSizeBase: 14px;
+  fontSizeLg: 16px;
+  fontSizeSm: 12px;
+} 
