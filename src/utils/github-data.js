@@ -14,7 +14,7 @@ export class GitHubDataService {
     try {
       const response = await fetch(`${this.baseUrl}/${path}`)
       const data = await response.json()
-      // GitHub API 返回的内容是 base64 编码的
+      // Content from GitHub API is base64 encoded
       const cleanContent = data.content.replace(/\n/g, '')
       return cleanContent
     } catch (error) {
@@ -25,28 +25,28 @@ export class GitHubDataService {
 
   decryptData(encryptedData) {
     try {
-      // 双重 base64 解码
+      // Double base64 decode
       let decoded
       try {
-        // 第一次解码
+        // First decode
         const firstDecode = atob(encryptedData)
-        // 第二次解码
+        // Second decode
         decoded = atob(firstDecode)
       } catch (e) {
         console.error('Base64 decoding error:', e)
         throw new Error('Invalid base64 encoding')
       }
       
-      // 转换为 WordArray
+      // Convert to WordArray
       const rawData = CryptoJS.enc.Latin1.parse(decoded)
       
-      // 提取 IV (前16字节)
+      // Extract IV (first 16 bytes)
       const iv = CryptoJS.lib.WordArray.create(rawData.words.slice(0, 4))
       
-      // 提取加密数据 (剩余部分)
+      // Extract encrypted data (remaining part)
       const encryptedContent = CryptoJS.lib.WordArray.create(rawData.words.slice(4))
 
-      // 解密
+      // Decrypt
       const decrypted = CryptoJS.AES.decrypt(
         { ciphertext: encryptedContent },
         this.key,
@@ -57,7 +57,7 @@ export class GitHubDataService {
         }
       )
       
-      // 转换为字符串并解析 JSON
+      // Convert to string and parse JSON
       const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8)
       return JSON.parse(decryptedStr)
     } catch (error) {
@@ -73,25 +73,33 @@ export class GitHubDataService {
 
   async getRecentFiles(directory, days) {
     try {
-      // 获取目录内容
+      // Get directory contents
       const response = await fetch(`${this.baseUrl}/${directory}`)
       const files = await response.json()
       
-      // 获取最近n天的文件
-      const today = new Date()
-      const recentFiles = files
-        .filter(file => {
-          const fileName = file.name
-          // 假设文件名格式为 YYYY-MM-DD.json
-          const fileDate = new Date(fileName.split('.')[0])
-          const diffTime = Math.abs(today - fileDate)
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-          return diffDays <= days
-        })
-        .sort((a, b) => b.name.localeCompare(a.name)) // 按日期降序排序
-        .slice(0, days)
+      // First sort all files by date
+      const sortedFiles = files.sort((a, b) => b.name.localeCompare(a.name)) // Descending order
+      
+      if (sortedFiles.length === 0) {
+        return []
+      }
 
-      // 获取并解密每个文件的内容
+      // Get the latest file date as reference point
+      const latestFileName = sortedFiles[0].name
+      const referenceDate = new Date(latestFileName.split('.')[0])
+
+      // Filter files from last n days based on latest file date
+      const recentFiles = sortedFiles.filter(file => {
+        const fileName = file.name
+        // Assume filename format is YYYY-MM-DD.json
+        const fileDate = new Date(fileName.split('.')[0])
+        const diffTime = Math.abs(referenceDate - fileDate)
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return diffDays < days
+      })
+      .slice(0, days)
+
+      // Get and decrypt the content of each file
       const contents = await Promise.all(
         recentFiles.map(async file => {
           try {

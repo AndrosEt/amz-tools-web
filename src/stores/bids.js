@@ -12,7 +12,7 @@ export const useBidsStore = defineStore('bids', {
       try {
         const githubService = new GitHubDataService()
         const data = await githubService.getRecentFiles('bid_recommendations', days)
-        // 合并多天的数据
+        // Merge data from multiple days
         const mergedData = data.flat()
 
         // Group data by keyword

@@ -13,7 +13,7 @@ export const useBudgetStore = defineStore('budget', {
       try {
         const githubService = new GitHubDataService()
         const data = await githubService.getRecentFiles('budget_usage', days)
-        // 合并多天的数据
+        // Merge data from multiple days
         const mergedData = data.flat()
 
         // Group data by portfolio ID
@@ -46,7 +46,7 @@ export const useBudgetStore = defineStore('budget', {
         }, 0)
       } catch (error) {
         if (error.message === 'AES_KEY_NOT_FOUND') {
-          // 这种情况会被 App.vue 处理，不需要额外处理
+          // This case will be handled by App.vue, no additional handling needed
           return
         }
         console.error('Error fetching budget data:', error)
