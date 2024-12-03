@@ -5,9 +5,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import Chart from 'chart.js/auto'
 import 'chartjs-adapter-date-fns'
+import { getChartColors } from '../../utils/chart-colors';
 
 const props = defineProps({
   chartData: {
@@ -25,14 +26,16 @@ const createChart = (data) => {
   }
 
   const ctx = chartRef.value.getContext('2d')
-  const datasets = Object.entries(data).map(([portfolioId, data], index) => ({
+  const colorMap = getChartColors('budget', Object.keys(data));
+  
+  const datasets = Object.entries(data).map(([portfolioId, data]) => ({
     label: data.name,
     data: data.timestamps.map((timestamp, i) => ({
       x: new Date(timestamp),
       y: 100 - data.usage[i]
     })),
-    backgroundColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`,
-    borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`,
+    backgroundColor: colorMap[portfolioId],
+    borderColor: colorMap[portfolioId].replace('0.6', '1'),
     fill: false,
     tension: 0.1
   }))
@@ -79,6 +82,24 @@ onMounted(() => {
     createChart(props.chartData)
   }
 })
+
+const getChartOptions = computed(() => {
+  const portfolioNames = Object.keys(props.chartData);
+  const colorMap = getChartColors('budget', portfolioNames);
+  
+  return {
+    // ... other options
+    series: portfolioNames.map(name => ({
+      name,
+      type: 'line',
+      data: props.chartData[name],
+      itemStyle: {
+        color: colorMap[name]
+      }
+    }))
+    // ... rest of options
+  };
+});
 </script>
 
 <style scoped>
