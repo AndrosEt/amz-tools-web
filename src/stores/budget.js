@@ -16,7 +16,7 @@ export const useBudgetStore = defineStore('budget', {
         // Merge data from multiple days
         const mergedData = data.flat()
 
-        // Group data by portfolio ID
+        // Group data by portfolio ID and sort items within each portfolio
         this.portfolioData = mergedData.reduce((acc, item) => {
           if (!acc[item.id]) {
             acc[item.id] = {
@@ -25,6 +25,19 @@ export const useBudgetStore = defineStore('budget', {
             }
           }
           acc[item.id].items.push(item)
+          
+          // Sort items after adding new item
+          acc[item.id].items.sort((a, b) => {
+            // First sort by startDate (descending)
+            const dateCompare = b.startDate.localeCompare(a.startDate)
+            if (dateCompare !== 0) return dateCompare
+            
+            // Then by usageUpdatedTimestamp (descending)
+            // Convert to string for reliable comparison
+            return String(b.usageUpdatedTimestamp).localeCompare(String(a.usageUpdatedTimestamp))
+          })
+          
+      
           return acc
         }, {})
 
@@ -38,33 +51,24 @@ export const useBudgetStore = defineStore('budget', {
           return acc
         }, {})
 
-        // Calculate total spend
+        // When calculating totalSpend, log the grouped data
         this.totalSpend = Object.values(this.portfolioData).reduce((sum, portfolio) => {
-          // Group items by startDate to handle multiple budget periods
-          const groupedByStartDate = portfolio.items.reduce((acc, item) => {
-            if (!acc[item.startDate]) {
-              acc[item.startDate] = []
+          const groupedByStartDate = {}
+          for (const item of portfolio.items) {
+            if (!groupedByStartDate[item.startDate]) {
+              groupedByStartDate[item.startDate] = item
             }
-            acc[item.startDate].push(item)
-            return acc
-          }, {})
-
-          // Calculate and sum up the latest spend for each startDate
-          const portfolioSpend = Object.values(groupedByStartDate).reduce((total, items) => {
-            // Get the most recent usage data for this startDate
-            const latestUsage = items.reduce((latest, item) => {
-              return !latest || item.usageUpdatedTimestamp > latest.usageUpdatedTimestamp ? item : latest
-            }, null)
-            
-            // Add spend for this budget period
+          }
+          
+          const portfolioSpend = Object.values(groupedByStartDate).reduce((total, latestUsage) => {
             return total + (latestUsage.budget * (latestUsage.budgetUsagePercent / 100))
           }, 0)
 
           return sum + portfolioSpend
         }, 0)
+
       } catch (error) {
         if (error.message === 'AES_KEY_NOT_FOUND') {
-          // This case will be handled by App.vue, no additional handling needed
           return
         }
         console.error('Error fetching budget data:', error)

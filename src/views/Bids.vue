@@ -29,9 +29,8 @@
           <el-table :data="items" 
                     stripe 
                     border 
-                    style="width: 100%">
-            <el-table-column prop="adgroup_id" 
-                           label="Ad Group ID" />
+                    style="width: 100%"
+                    class="data-table">
             <el-table-column prop="suggested_bid" 
                            label="Suggested Bid ($)"
                            :formatter="(row) => '$' + row.suggested_bid.toFixed(2)" />
@@ -124,6 +123,40 @@ fetchData()
     }
   }
 
+  .data-table {
+    width: 100%;
+    overflow-x: auto;
+    
+    :deep(.el-table) {
+      --el-table-header-padding: 8px 0;
+      --el-table-padding: 6px 0;
+      
+      .el-table__header-wrapper,
+      .el-table__body-wrapper {
+        th.el-table__cell,
+        td.el-table__cell {
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+      }
+
+      .el-table__cell {
+        &:nth-child(1) { min-width: 120px; }  // Suggested Bid
+        &:nth-child(2) { min-width: 140px; }  // Last Updated
+      }
+    }
+
+    :deep(.el-table__header-wrapper th.el-table__cell),
+    :deep(.el-table__body-wrapper td.el-table__cell) {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
   @media (max-width: 768px) {
     .control-buttons {
       flex-direction: column;
@@ -135,6 +168,44 @@ fetchData()
         .el-button {
           flex: 1;
         }
+      }
+    }
+
+    .data-table {
+      :deep(.el-table__header-wrapper) {
+        th.el-table__cell {
+          .cell {
+            font-size: 10px;
+            color: black;
+          }
+        }
+      }
+      
+      :deep(.el-table__header),
+      :deep(.el-table__body) {
+        width: 100% !important;
+        table {
+          width: 100% !important;
+        }
+      }
+
+      :deep(colgroup) {
+        col {
+          &:nth-child(1) { width: 120px !important; }
+          &:nth-child(2) { width: 140px !important; }
+        }
+      }
+
+      :deep(.el-table__header-wrapper th.el-table__cell),
+      :deep(.el-table__body-wrapper td.el-table__cell) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      :deep(.cell) {
+        width: fit-content;
+        text-wrap: inherit;
       }
     }
   }
