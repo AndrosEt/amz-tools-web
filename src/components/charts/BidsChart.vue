@@ -45,58 +45,66 @@ const createChart = (data) => {
     tension: 0.1
   }))
 
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: { datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          type: 'time',
-          time: {
-            unit: 'hour',
-            displayFormats: {
-              hour: 'yyyy-MM-dd HH:mm'
-            }
-          },
-          title: {
-            display: true,
-            text: 'Update Time'
-          },
-          ticks: {
-            maxRotation: 45,
-            minRotation: 45
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'hour',
+          displayFormats: {
+            hour: 'yyyy-MM-dd HH:mm'
           }
         },
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Suggested Bid ($)'
-          }
+        title: {
+          display: true,
+          text: 'Update Time'
+        },
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45,
+          maxTicksLimit: window.innerWidth <= 768 ? 6 : 12,
+          autoSkip: true
         }
       },
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              let label = context.dataset.label || '';
-              if (label) {
-                label += ': ';
-              }
-              if (context.parsed.y !== null) {
-                label += '$' + context.parsed.y.toFixed(2);
-              }
-              return label;
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Suggested Bid ($)'
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          boxWidth: window.innerWidth <= 768 ? 8 : 40,
+          padding: window.innerWidth <= 768 ? 10 : 20
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
             }
+            if (context.parsed.y !== null) {
+              label += '$' + context.parsed.y.toFixed(2);
+            }
+            return label;
           }
         }
       }
     }
+  }
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: options
   })
 }
 

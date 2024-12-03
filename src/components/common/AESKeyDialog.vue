@@ -5,7 +5,7 @@
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :show-close="false"
-    width="500px"
+    :width="dialogWidth"
   >
     <div class="description">
       Please enter your Base64 encoded AES key (44 characters)
@@ -71,6 +71,9 @@ const handleSubmit = () => {
     window.location.reload()
   }
 }
+
+// Add responsive dialog width
+const dialogWidth = window.innerWidth <= 768 ? '90%' : '500px'
 </script>
 
 <style scoped>

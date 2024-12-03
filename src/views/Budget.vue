@@ -32,19 +32,20 @@
           <el-table :data="portfolio.items" 
                     stripe 
                     border 
-                    style="width: 100%">
+                    style="width: 100%" 
+                    class="data-table">
             <el-table-column prop="budget" 
-                           label="Budget ($)" 
+                           label="Budget " 
                            :formatter="(row) => row.budget.toLocaleString()" />
             <el-table-column prop="startDate" 
-                           label="Start Date" />
+                           label="Start" />
             <el-table-column prop="budgetUsagePercent" 
-                           label="Budget Usage %" 
+                           label="Usage %" 
                            :formatter="(row) => row.budgetUsagePercent.toFixed(2) + '%'" />
-            <el-table-column label="Real Spend ($)"
+            <el-table-column label="Spend ($)"
                            :formatter="(row) => '$' + (row.budget * (row.budgetUsagePercent / 100)).toFixed(2)" />
             <el-table-column prop="usageUpdatedTimestamp" 
-                           label="Last Updated"
+                           label="Updated"
                            :formatter="(row) => new Date(row.usageUpdatedTimestamp).toLocaleString()" />
           </el-table>
         </el-card>
@@ -133,7 +134,84 @@ fetchData()
     }
   }
 
+  .data-table {
+    width: 100%;
+    overflow-x: auto;
+    
+    :deep(.el-table) {
+      --el-table-header-padding: 8px 0;
+      --el-table-padding: 6px 0;
+      
+      .el-table__header-wrapper,
+      .el-table__body-wrapper {
+        th.el-table__cell,
+        td.el-table__cell {
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          padding-left: 8px;
+          padding-right: 8px;
+        }
+      }
+
+      .el-table__cell {
+        &:nth-child(1) { min-width: 50px; }  // Budget
+        &:nth-child(2) { min-width: 90px; }  // Start Date 
+        &:nth-child(3) { min-width: 90px; }  // Budget Usage
+        &:nth-child(4) { min-width: 80px; }  // Real Spend
+        &:nth-child(5) { min-width: 140px; } // Last Updated
+      }
+    }
+
+    :deep(.el-table__header-wrapper th.el-table__cell),
+    :deep(.el-table__body-wrapper td.el-table__cell) {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
   @media (max-width: 768px) {
+    .data-table {
+      :deep(.el-table__header-wrapper) {
+        th.el-table__cell {
+          .cell {
+            font-size: 10px;
+            color: black;
+          }
+        }
+      }
+      
+      :deep(.el-table__header),
+      :deep(.el-table__body) {
+        width: 100% !important;
+        table {
+          width: 100% !important;
+        }
+      }
+
+      :deep(colgroup) {
+        col {
+          &:nth-child(1) { width: 50px !important; }
+          &:nth-child(2) { width: 90px !important; }
+          &:nth-child(3) { width: 60px !important; }
+          &:nth-child(4) { width: 60px !important; }
+          &:nth-child(5) { width: 140px !important; }
+        }
+      }
+
+      :deep(.el-table__header-wrapper th.el-table__cell),
+      :deep(.el-table__body-wrapper td.el-table__cell) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      :deep(.cell) {
+        width: fit-content;
+        text-wrap: inherit;
+      }
+
+    }
     .control-buttons {
       flex-direction: column;
       align-items: stretch;

@@ -40,9 +40,27 @@ export const useBudgetStore = defineStore('budget', {
 
         // Calculate total spend
         this.totalSpend = Object.values(this.portfolioData).reduce((sum, portfolio) => {
-          return sum + portfolio.items.reduce((portfolioSum, item) => {
-            return portfolioSum + (item.budget * (item.budgetUsagePercent / 100))
+          // Group items by startDate to handle multiple budget periods
+          const groupedByStartDate = portfolio.items.reduce((acc, item) => {
+            if (!acc[item.startDate]) {
+              acc[item.startDate] = []
+            }
+            acc[item.startDate].push(item)
+            return acc
+          }, {})
+
+          // Calculate and sum up the latest spend for each startDate
+          const portfolioSpend = Object.values(groupedByStartDate).reduce((total, items) => {
+            // Get the most recent usage data for this startDate
+            const latestUsage = items.reduce((latest, item) => {
+              return !latest || item.usageUpdatedTimestamp > latest.usageUpdatedTimestamp ? item : latest
+            }, null)
+            
+            // Add spend for this budget period
+            return total + (latestUsage.budget * (latestUsage.budgetUsagePercent / 100))
           }, 0)
+
+          return sum + portfolioSpend
         }, 0)
       } catch (error) {
         if (error.message === 'AES_KEY_NOT_FOUND') {
